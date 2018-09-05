@@ -28,6 +28,11 @@ tpm2_startup --clear
 ## Docker container availability
 
 ```bash
-docker pull starlabio/tpm-emulator
-docker run -it starlabio/tpm-emulator
+docker pull gt3389b/tpm-emulator
+
+#test tools at the bash shell (need to start the tpm_server)
+docker run -it gt3389b/tpm-emulator 
+
+#run the TPM server
+docker run -d -p 2321:2321 -p 2322:2322 gt3389b/tpm-emulator /usr/local/bin/tpm_server -rm 
 ```

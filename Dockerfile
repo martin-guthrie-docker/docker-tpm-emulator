@@ -5,15 +5,27 @@ MAINTAINER Doug Goldstein <doug@starlab.io>
 RUN apt-get update && \
     apt-get --yes --quiet install build-essential git automake autoconf curl \
         pkg-config autoconf-archive libtool libcurl4-openssl-dev libgmp-dev \
-        libssl-dev cmake trousers tpm-tools && \
+        libssl-dev cmake trousers tpm-tools pwgen man vim && \
     apt-get clean &&  \
     rm -rf /var/lib/apt/lists* /tmp/* /var/tmp/*
 
+# OpenSSL
+ARG openssl_name=openssl-1.1.0h
+WORKDIR /tmp
+RUN curl -sSfL https://www.openssl.org/source/openssl-1.1.0h.tar.gz > openssl-1.1.0h.tar.gz && \
+    tar -zxf openssl-1.1.0h.tar.gz && \
+    cd openssl-1.1.0h && \
+    ./config --prefix=/usr/local/openssl --openssldir=/usr/local/openssl && \
+    make -j$(nproc) && \
+    make install && \
+    openssl version
+
 # tpm-emulator
+WORKDIR /tmp
 RUN git clone https://github.com/PeterHuewe/tpm-emulator.git
 RUN cd tpm-emulator && \
     mkdir build && \
-    cd build && \
+   cd build && \
     cmake ../ && \
     make tpmd && \
     mv tpmd/unix/tpmd /usr/local/bin/ && \
@@ -27,17 +39,20 @@ ENV TCSD_USE_TCP_DEVICE=1
 EXPOSE 2412
 
 # tpm2-emulator
-RUN curl -sSfL https://sourceforge.net/projects/ibmswtpm2/files/ibmtpm974.tar.gz/download > ibmtpm974.tar.gz && \
+# IBM's Software TPM 2.0
+WORKDIR /tmp
+RUN curl -sSfL https://sourceforge.net/projects/ibmswtpm2/files/ibmtpm1119.tar.gz/download > ibmtpm1119.tar.gz && \
     mkdir ibmtpm && \
     cd ibmtpm && \
-    tar -zxf ../ibmtpm974.tar.gz && \
+    tar -zxf ../ibmtpm1119.tar.gz && \
     cd src && \
-    make && \
+    CFLAGS="-I/usr/local/openssl/include" make -j$(nproc) && \
     mv tpm_server /usr/local/bin/ && \
     cd && \
-    rm -rf ibmtpm ibmtpm974.tar.gz
+    rm -rf ibmtpm ibmtpm1119.tar.gz
 
 # tpm2-tss
+WORKDIR /tmp
 RUN curl -sSfL https://github.com/01org/tpm2-tss/releases/download/1.2.0/tpm2-tss-1.2.0.tar.gz > tpm2-tss-1.2.0.tar.gz && \
     tar -zxf tpm2-tss-1.2.0.tar.gz && \
     cd tpm2-tss-1.2.0 && \
@@ -49,6 +64,7 @@ RUN curl -sSfL https://github.com/01org/tpm2-tss/releases/download/1.2.0/tpm2-ts
     ldconfig
 
 # tpm2-tools
+WORKDIR /tmp
 RUN curl -sSfL https://github.com/01org/tpm2-tools/archive/2.1.0.tar.gz > tpm2-tools-2.1.0.tar.gz && \
     tar -zxf tpm2-tools-2.1.0.tar.gz && \
     cd tpm2-tools-2.1.0 && \
@@ -66,3 +82,5 @@ ENV TPM2TOOLS_TCTI_NAME=socket
 # the TPM2 emulator listens on ports 2321 and 2322.
 EXPOSE 2321
 EXPOSE 2322
+
+#ENTRYPOINT ["/usr/local/bin/tpm_server","-rm"]
