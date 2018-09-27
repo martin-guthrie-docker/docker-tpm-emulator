@@ -41,13 +41,18 @@ EXPOSE 2412
 # tpm2-emulator
 # IBM's Software TPM 2.0
 WORKDIR /tmp
+RUN mkdir ibmtpm
+COPY makefile.patch /tmp/ibmtpm
 RUN curl -sSfL https://sourceforge.net/projects/ibmswtpm2/files/ibmtpm1119.tar.gz/download > ibmtpm1119.tar.gz && \
-    mkdir ibmtpm && \
     cd ibmtpm && \
     tar -zxf ../ibmtpm1119.tar.gz && \
+    patch -p0< makefile.patch && \
     cd src && \
     CFLAGS="-I/usr/local/openssl/include" make -j$(nproc) && \
     mv tpm_server /usr/local/bin/ && \
+    make clean && \
+    CFLAGS="-I/usr/local/openssl/include -DNDEBUG" make -j$(nproc) && \
+    mv tpm_server /usr/local/bin/tpm_server_ndebug && \
     cd && \
     rm -rf ibmtpm ibmtpm1119.tar.gz
 
