@@ -31,10 +31,10 @@ tpm2_startup --clear
 docker pull gt3389b/tpm-emulator
 
 #test tools at the bash shell (need to start the tpm_server)
-docker run -d -p 2321:2321 -p 2322:2322 -it gt3389b/tpm-emulator 
+docker run -d -p 2321:2321 -p 2322:2322 -it martinguthriedocker/tpm-emulator
 
 #run the TPM server with fixed EK
-docker run -d -p 2321:2321 -p 2322:2322 gt3389b/tpm-emulator /usr/local/bin/tpm_server -rm 
+docker run -d -p 2321:2321 -p 2322:2322 martinguthriedocker/tpm-emulator tpm_server -rm 
 
 #run the TPM server with RNG EK
-docker run -d -p 2321:2321 -p 2322:2322 gt3389b/tpm-emulator /usr/local/bin/tpm_server_ndebug -rm 
+docker run -d -p 2321:2321 -p 2322:2322 martinguthriedocker/tpm-emulator /usr/local/bin/tpm_server_ndebug -rm 
