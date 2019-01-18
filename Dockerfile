@@ -42,11 +42,9 @@ EXPOSE 2412
 # IBM's Software TPM 2.0
 WORKDIR /tmp
 RUN mkdir ibmtpm
-COPY makefile.patch /tmp/ibmtpm
 RUN curl -sSfL https://sourceforge.net/projects/ibmswtpm2/files/ibmtpm1119.tar.gz/download > ibmtpm1119.tar.gz && \
     cd ibmtpm && \
     tar -zxf ../ibmtpm1119.tar.gz && \
-    patch -p0< makefile.patch && \
     cd src && \
     CFLAGS="-I/usr/local/openssl/include" make -j$(nproc) && \
     mv tpm_server /usr/local/bin/ && \
